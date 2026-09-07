@@ -1,6 +1,8 @@
-import { ScanHistoryItem, SampleClip, ProtectionSettings } from '../types';
+/**
+ * VoiceGuard AI - Mock data in standard JavaScript
+ */
 
-export const INITIAL_SCANS: ScanHistoryItem[] = [
+export const INITIAL_SCANS = [
   {
     id: 'scan-1',
     filename: 'Executive_Voicemail_Oct14.wav',
@@ -11,7 +13,8 @@ export const INITIAL_SCANS: ScanHistoryItem[] = [
     confidencePercent: 98.2,
     anomalyTag: 'Artifact: Pitch Glitch & Unnatural Formants',
     model: 'ElevenLabs Multilingual v2',
-    acousticFindings: 'Unnatural formant transitions detected in phoneme intervals. Sub-harmonic distortion indicative of high-frequency diffusion vocoder.',
+    acousticFindings:
+      'Unnatural formant transitions detected in phoneme intervals. Sub-harmonic distortion indicative of high-frequency diffusion vocoder.',
     glottalPulseWindow: '0:03 - 0:08',
     spectralDiscontinuityWindow: '0:11 - 0:15',
     neuralConsistency: 98.2,
@@ -29,7 +32,8 @@ export const INITIAL_SCANS: ScanHistoryItem[] = [
     confidencePercent: 99.6,
     anomalyTag: 'Natural pulmonary breath resonance verified',
     model: 'Organic Vocal Tract Biological Profile',
-    acousticFindings: 'Natural chest cavity resonance, authentic involuntary micro-tremors, continuous harmonic decay across dynamic range.',
+    acousticFindings:
+      'Natural chest cavity resonance, authentic involuntary micro-tremors, continuous harmonic decay across dynamic range.',
     neuralConsistency: 1.2,
     harmonicDiffusionMatch: 3.1,
     phaseCutoff: 'Continuous spectrum up to 22.0 kHz',
@@ -45,7 +49,8 @@ export const INITIAL_SCANS: ScanHistoryItem[] = [
     confidencePercent: 94.1,
     anomalyTag: 'Phoneme Boundary Discontinuity Flagged',
     model: 'OpenVoice v2 / XTTS Synthesizer',
-    acousticFindings: 'Microscopic stitching boundaries between syllables. Synthetic envelope repetition with algorithmic pitch normalization.',
+    acousticFindings:
+      'Microscopic stitching boundaries between syllables. Synthetic envelope repetition with algorithmic pitch normalization.',
     glottalPulseWindow: '0:05 - 0:11',
     spectralDiscontinuityWindow: '0:16 - 0:21',
     neuralConsistency: 94.1,
@@ -63,7 +68,8 @@ export const INITIAL_SCANS: ScanHistoryItem[] = [
     confidencePercent: 97.8,
     anomalyTag: 'Harmonic integrity confirmed across 3 speakers',
     model: 'Multi-Speaker Acoustic Chamber Acoustic Profile',
-    acousticFindings: 'Natural room reverberation, human speech pauses, overlapping vocal envelopes with organic phase coherence.',
+    acousticFindings:
+      'Natural room reverberation, human speech pauses, overlapping vocal envelopes with organic phase coherence.',
     neuralConsistency: 2.8,
     harmonicDiffusionMatch: 4.0,
     phaseCutoff: 'Wideband Studio 24-bit PCM',
@@ -71,7 +77,7 @@ export const INITIAL_SCANS: ScanHistoryItem[] = [
   },
 ];
 
-export const SAMPLES_DATA: SampleClip[] = [
+export const SAMPLES_DATA = [
   {
     id: 'sample-1',
     title: 'CEO Emergency Wire Request',
@@ -176,7 +182,8 @@ export const SAMPLES_DATA: SampleClip[] = [
     type: 'authentic',
     badge: 'Verified Authentic • Field Microphones',
     duration: '0:41',
-    description: 'Outdoor street interview recording with dynamic wind noise and spontaneous dialogue.',
+    description:
+      'Outdoor street interview recording with dynamic wind noise and spontaneous dialogue.',
     confidenceLabel: 'Human 98.1%',
     confidenceNum: 98.1,
     model: 'Field Acoustic Organic Recording',
@@ -186,7 +193,7 @@ export const SAMPLES_DATA: SampleClip[] = [
   },
 ];
 
-export const DEFAULT_SETTINGS: ProtectionSettings = {
+export const DEFAULT_SETTINGS = {
   liveMonitoring: true,
   instantAlerts: true,
   uploadScanNotify: true,

@@ -1,13 +1,6 @@
 import React from 'react';
-import { ScreenType } from '../types';
 
-interface BottomNavProps {
-  currentScreen: ScreenType;
-  onNavigate: (screen: ScreenType) => void;
-  hasUnreadAlert?: boolean;
-}
-
-export const BottomNav: React.FC<BottomNavProps> = ({
+export const BottomNav = ({
   currentScreen,
   onNavigate,
   hasUnreadAlert = true,

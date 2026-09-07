@@ -1,21 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { ScreenType } from '../types';
 
-interface UploadScreenProps {
-  onNavigate: (screen: ScreenType) => void;
-  onStartScan: (filename: string, duration: string, mode: 'quick' | 'deep') => void;
-}
-
-export const UploadScreen: React.FC<UploadScreenProps> = ({
-  onNavigate,
-  onStartScan,
-}) => {
-  const [selectedFile, setSelectedFile] = useState<{
-    name: string;
-    size: string;
-    duration: string;
-    sampleRate: string;
-  } | null>({
+export const UploadScreen = ({ onNavigate, onStartScan }) => {
+  const [selectedFile, setSelectedFile] = useState({
     name: 'suspicious_client_note_v2.wav',
     size: '3.4 MB',
     duration: '00:38',
@@ -24,11 +10,11 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [playProgress, setPlayProgress] = useState(36); // percent
-  const [pipelineMode, setPipelineMode] = useState<'quick' | 'deep'>('deep');
+  const [pipelineMode, setPipelineMode] = useState('deep');
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef(null);
 
-  const handleFileDrop = (e: React.DragEvent) => {
+  const handleFileDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -36,7 +22,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     }
   };
 
-  const handleNewFile = (file: File) => {
+  const handleNewFile = (file) => {
     const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
     setSelectedFile({
       name: file.name,
@@ -46,7 +32,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       handleNewFile(e.target.files[0]);
     }

@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import { ScreenType, ProtectionSettings } from '../types';
 import { SHIELD_LOGO_URL } from './Header';
 import { useAuth } from '../context/AuthContext';
 
-interface AlertsScreenProps {
-  settings: ProtectionSettings;
-  onUpdateSettings: (newSettings: ProtectionSettings) => void;
-  onNavigate: (screen: ScreenType) => void;
-  onViewLatestIncident: () => void;
-}
-
-export const AlertsScreen: React.FC<AlertsScreenProps> = ({
+export const AlertsScreen = ({
   settings,
   onUpdateSettings,
   onViewLatestIncident,
@@ -18,7 +10,7 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
   const { user, signIn, setIsProfileOpen, loading } = useAuth();
   const [showBanner, setShowBanner] = useState(true);
   const [streamMuted, setStreamMuted] = useState(false);
-  const [simulatedConfidence, setSimulatedConfidence] = useState<number>(94.5);
+  const [simulatedConfidence, setSimulatedConfidence] = useState(94.5);
   const [savedToast, setSavedToast] = useState(false);
 
   const threshold = settings.highPriorityThreshold ?? 90;
@@ -29,9 +21,7 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
     setTimeout(() => setSavedToast(false), 2000);
   };
 
-  const handleToggle = (
-    key: keyof Omit<ProtectionSettings, 'sensitivity' | 'highPriorityThreshold'>
-  ) => {
+  const handleToggle = (key) => {
     onUpdateSettings({
       ...settings,
       [key]: !settings[key],
@@ -39,7 +29,7 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
     triggerSavedToast();
   };
 
-  const handleSensitivityChange = (val: number) => {
+  const handleSensitivityChange = (val) => {
     onUpdateSettings({
       ...settings,
       sensitivity: val,
@@ -47,7 +37,7 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
     triggerSavedToast();
   };
 
-  const handleThresholdChange = (val: number) => {
+  const handleThresholdChange = (val) => {
     const clamped = Math.min(99, Math.max(50, isNaN(val) ? 90 : Math.round(val)));
     onUpdateSettings({
       ...settings,
@@ -56,13 +46,13 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
     triggerSavedToast();
   };
 
-  const getSensitivityLabel = (val: number) => {
+  const getSensitivityLabel = (val) => {
     if (val >= 85) return `High (${val}%)`;
     if (val >= 70) return `Balanced (${val}%)`;
     return `Aggressive (${val}%)`;
   };
 
-  const getThresholdTier = (val: number) => {
+  const getThresholdTier = (val) => {
     if (val >= 95) {
       return {
         label: `Critical Only (≥${val}%)`,

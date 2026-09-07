@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import { ScreenType, SampleClip, ScanHistoryItem } from '../types';
 import { SAMPLES_DATA } from '../data/mockData';
 
-interface SamplesScreenProps {
-  onNavigate: (screen: ScreenType) => void;
-  onSelectScan: (scan: ScanHistoryItem) => void;
-}
-
-export const SamplesScreen: React.FC<SamplesScreenProps> = ({
+export const SamplesScreen = ({
   onNavigate,
   onSelectScan,
 }) => {
-  const [filter, setFilter] = useState<'all' | 'authentic' | 'cloned'>('all');
-  const [playingClipId, setPlayingClipId] = useState<string | null>(null);
+  const [filter, setFilter] = useState('all');
+  const [playingClipId, setPlayingClipId] = useState(null);
 
   // Modal State
-  const [activeModalClip, setActiveModalClip] = useState<SampleClip | null>(null);
+  const [activeModalClip, setActiveModalClip] = useState(null);
 
   const filteredClips = SAMPLES_DATA.filter((clip) => {
     if (filter === 'all') return true;
@@ -25,16 +19,16 @@ export const SamplesScreen: React.FC<SamplesScreenProps> = ({
   const authenticCount = SAMPLES_DATA.filter((c) => c.type === 'authentic').length;
   const clonedCount = SAMPLES_DATA.filter((c) => c.type === 'cloned').length;
 
-  const togglePlay = (id: string) => {
+  const togglePlay = (id) => {
     setPlayingClipId(playingClipId === id ? null : id);
   };
 
-  const handleAnalyzeClip = (clip: SampleClip) => {
+  const handleAnalyzeClip = (clip) => {
     setActiveModalClip(clip);
   };
 
-  const handleViewFullReport = (clip: SampleClip) => {
-    const scanItem: ScanHistoryItem = {
+  const handleViewFullReport = (clip) => {
+    const scanItem = {
       id: clip.id,
       filename: `${clip.title.replace(/\s+/g, '_')}.wav`,
       timeAgo: 'Just now',

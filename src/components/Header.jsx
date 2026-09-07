@@ -1,14 +1,5 @@
 import React from 'react';
-import { ScreenType } from '../types';
-import { useAuth } from '../context/AuthContext';
-
-interface HeaderProps {
-  currentScreen: ScreenType;
-  onNavigate: (screen: ScreenType) => void;
-  showBack?: boolean;
-  onBack?: () => void;
-  titleOverride?: string;
-}
+import { useAuth } from '../context/AuthContext.jsx';
 
 export const SHIELD_LOGO_URL =
   'https://lh3.googleusercontent.com/aida/AEtjO1WvE2AA43ZFp75k6o1KJ0kySOcY5ZiKnyrRUdUlEk916PaEhpjvI2kszLRQtEC008n1PfC5gTFwH5faUOJGilAOl2wKLAm-SXJaXHCEWsK0NZ1bpxM7v_uE2m-yG0QZg2ANg9EXbx-SHaBofgVTmB5s_uVkUuiTIfw_9qgqGyDJcZ7J01jNZW4AnrIXgtiVYfDYVvWXlGti5i2ZLGQKXFBBlyi9xx926jRPWyJ4CE7jD6Zw80Yn4hOU9w';
@@ -16,14 +7,14 @@ export const SHIELD_LOGO_URL =
 export const PROFILE_AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuB7i5sv9aGAuaB-gbTOEwSrxX824dXNCj_Ahy-hc5f24lavMw1sukQfxXu9SPzOWIPLn7PckOrehUXvXeY1p_eB3PYTEwCvj7-eB-7opy-XudF_W9UKcn9vEIh0esc3mHCSHYTrzC31VzavMuD5BrKVa1pzPdimyvBliNzuwiIdBlM5f5-JO6YuY45Ahj6XBFWaFls6wtB_pPMEQyDTSEeX8mz3PNFd9mD9TgeUQ19yxpC8XdmqGWTr';
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header = ({
   currentScreen,
   onNavigate,
   showBack = false,
   onBack,
   titleOverride,
 }) => {
-  const { user, userProfile, signIn, setIsProfileOpen, loading } = useAuth();
+  const { user, signIn, setIsProfileOpen, loading } = useAuth();
 
   const getScreenLabel = () => {
     if (titleOverride) return titleOverride;
@@ -49,9 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const isFullTitleHeader = currentScreen === 'scanning_stream' || currentScreen === 'incident_report';
+  const isFullTitleHeader =
+    currentScreen === 'scanning_stream' || currentScreen === 'incident_report';
 
-  const navLinks: { label: string; screen: ScreenType; icon: string }[] = [
+  const navLinks = [
     { label: 'Home', screen: 'home', icon: 'home' },
     { label: 'Transcribe', screen: 'transcribe', icon: 'speech_to_text' },
     { label: 'Live Sentry', screen: 'scan_record', icon: 'mic' },
@@ -112,7 +104,8 @@ export const Header: React.FC<HeaderProps> = ({
           {navLinks.map((item) => {
             const isActive =
               currentScreen === item.screen ||
-              (item.screen === 'scan_record' && (currentScreen === 'scan_record' || currentScreen === 'scanning_stream')) ||
+              (item.screen === 'scan_record' &&
+                (currentScreen === 'scan_record' || currentScreen === 'scanning_stream')) ||
               (item.screen === 'alerts' && currentScreen === 'incident_report');
 
             return (

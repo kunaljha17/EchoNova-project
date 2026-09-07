@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ScreenType, ScanHistoryItem, ProtectionSettings } from './types';
 import { INITIAL_SCANS, DEFAULT_SETTINGS } from './data/mockData';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -27,18 +26,14 @@ import {
 
 function MainApp() {
   const { user } = useAuth();
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('home');
-  const [screenHistory, setScreenHistory] = useState<ScreenType[]>(['home']);
-  const [scans, setScans] = useState<ScanHistoryItem[]>(INITIAL_SCANS);
-  const [selectedScan, setSelectedScan] = useState<ScanHistoryItem | null>(INITIAL_SCANS[0]);
-  const [settings, setSettings] = useState<ProtectionSettings>(DEFAULT_SETTINGS);
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [screenHistory, setScreenHistory] = useState(['home']);
+  const [scans, setScans] = useState(INITIAL_SCANS);
+  const [selectedScan, setSelectedScan] = useState(INITIAL_SCANS[0]);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   // Active scan parameters during scanning stream
-  const [scanningTarget, setScanningTarget] = useState<{
-    filename: string;
-    duration: string;
-    mode: 'quick' | 'deep';
-  }>({
+  const [scanningTarget, setScanningTarget] = useState({
     filename: 'incoming_call_record_89.wav',
     duration: '0:24',
     mode: 'deep',
@@ -82,14 +77,14 @@ function MainApp() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleUpdateSettings = (newSettings: ProtectionSettings) => {
+  const handleUpdateSettings = (newSettings) => {
     setSettings(newSettings);
     if (user) {
       saveUserSettingsToCloud(user.uid, newSettings);
     }
   };
 
-  const navigateTo = (nextScreen: ScreenType) => {
+  const navigateTo = (nextScreen) => {
     if (nextScreen !== currentScreen) {
       setScreenHistory((prev) => [...prev, currentScreen]);
       setCurrentScreen(nextScreen);
@@ -109,15 +104,15 @@ function MainApp() {
   };
 
   const handleStartScan = (
-    filename: string,
-    duration: string,
-    mode: 'quick' | 'deep'
+    filename,
+    duration,
+    mode
   ) => {
     setScanningTarget({ filename, duration, mode });
     navigateTo('scanning_stream');
   };
 
-  const handleFinishRecording = (duration: string) => {
+  const handleFinishRecording = (duration) => {
     setScanningTarget({
       filename: `mic_sentry_capture_${Date.now().toString().slice(-4)}.wav`,
       duration,
@@ -130,7 +125,7 @@ function MainApp() {
     // Generate a fresh forensic report scan item
     const isSynthetic = Math.random() > 0.35;
     const confidence = isSynthetic ? 98.4 : 99.2;
-    const newScan: ScanHistoryItem = {
+    const newScan = {
       id: `scan-${Date.now()}`,
       filename: scanningTarget.filename,
       timeAgo: 'Just now',
@@ -166,7 +161,7 @@ function MainApp() {
     navigateTo('incident_report');
   };
 
-  const handleSelectScan = (scan: ScanHistoryItem) => {
+  const handleSelectScan = (scan) => {
     setSelectedScan(scan);
   };
 

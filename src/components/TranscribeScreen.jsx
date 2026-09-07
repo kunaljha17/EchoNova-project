@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScreenType, TranscriptItem, ScanHistoryItem } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { saveTranscriptRecord, subscribeUserTranscripts } from '../firebase';
-
-interface TranscribeScreenProps {
-  onNavigate: (screen: ScreenType) => void;
-  onSendToScan?: (audioData: string, filename: string, duration: string) => void;
-}
 
 // Built-in speech audio benchmarks for instant testing
 const DEMO_AUDIO_PRESETS = [
@@ -33,49 +27,49 @@ const DEMO_AUDIO_PRESETS = [
   },
 ];
 
-export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
+export const TranscribeScreen = ({
   onNavigate,
   onSendToScan,
 }) => {
   const { user, signIn } = useAuth();
 
   // Recording State
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
-  const [recordSeconds, setRecordSeconds] = useState<number>(0);
-  const [volumeLevel, setVolumeLevel] = useState<number>(0);
-  const [visualizerBars, setVisualizerBars] = useState<number[]>([
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const [volumeLevel, setVolumeLevel] = useState(0);
+  const [visualizerBars, setVisualizerBars] = useState([
     15, 25, 40, 65, 80, 55, 30, 45, 70, 85, 50, 35, 60, 45, 20, 30,
   ]);
 
   // Audio Data & Playback State
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
-  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
-  const [recordedBase64, setRecordedBase64] = useState<string | null>(null);
-  const [audioMimeType, setAudioMimeType] = useState<string>('audio/webm');
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [recordedBlob, setRecordedBlob] = useState(null);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState(null);
+  const [recordedBase64, setRecordedBase64] = useState(null);
+  const [audioMimeType, setAudioMimeType] = useState('audio/webm');
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // Transcription State
-  const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
-  const [transcriptResult, setTranscriptResult] = useState<string>('');
-  const [activeModel, setActiveModel] = useState<string>('gemini-3.5-transcribe');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [copiedToast, setCopiedToast] = useState<boolean>(false);
-  const [savedToast, setSavedToast] = useState<boolean>(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptResult, setTranscriptResult] = useState('');
+  const [activeModel, setActiveModel] = useState('gemini-3.5-transcribe');
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [copiedToast, setCopiedToast] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
 
   // History State
-  const [transcriptsHistory, setTranscriptsHistory] = useState<TranscriptItem[]>([]);
+  const [transcriptsHistory, setTranscriptsHistory] = useState([]);
 
   // Mic & Audio stream references
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const micStreamRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const audioElementRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Subscribe to user transcripts from Firestore if logged in
   useEffect(() => {
@@ -134,9 +128,9 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
     }
   };
 
-  const startVisualizer = (stream: MediaStream) => {
+  const startVisualizer = (stream) => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
       const audioCtx = new AudioCtx();
       audioContextRef.current = audioCtx;
 
@@ -156,7 +150,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
 
         // Compute volume level
         let sum = 0;
-        const barHeights: number[] = [];
+        const barHeights = [];
         const step = Math.floor(dataArray.length / 16);
 
         for (let i = 0; i < 16; i++) {
@@ -246,7 +240,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
         // Convert blob to base64
         const reader = new FileReader();
         reader.onloadend = () => {
-          const result = reader.result as string;
+          const result = reader.result;
           setRecordedBase64(result);
           // Auto-trigger transcription with gemini-3.5-transcribe
           transcribeAudioData(result, mime, audioBlob);
@@ -257,7 +251,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
       mediaRecorder.start(250); // Slice data every 250ms
       setIsRecording(true);
       setIsPaused(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Microphone recording error:', err);
       setErrorMessage(
         err.message ||
@@ -304,9 +298,9 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
    * Call the server API using model gemini-3.5-transcribe
    */
   const transcribeAudioData = async (
-    base64Data: string,
-    mimeType: string,
-    blob?: Blob
+    base64Data,
+    mimeType,
+    blob
   ) => {
     setIsTranscribing(true);
     setErrorMessage(null);
@@ -348,7 +342,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
       if (transcribedText) {
         const durationStr = formatDuration(recordSeconds || 6);
         const wordCount = transcribedText.split(/\s+/).filter(Boolean).length;
-        const newTranscriptItem: TranscriptItem = {
+        const newTranscriptItem = {
           id: `transcript-${Date.now()}`,
           text: transcribedText,
           model: 'gemini-3.5-transcribe',
@@ -366,7 +360,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
           saveTranscriptRecord(user.uid, newTranscriptItem);
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Transcription request failed:', err);
       setErrorMessage(
         err.message ||
@@ -380,7 +374,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
   /**
    * Transcribe a demo preset
    */
-  const handleSelectDemoPreset = (preset: typeof DEMO_AUDIO_PRESETS[0]) => {
+  const handleSelectDemoPreset = (preset) => {
     setErrorMessage(null);
     setIsTranscribing(true);
     setRecordedBlob(null);
@@ -394,7 +388,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
       setIsTranscribing(false);
 
       const wordCount = preset.text.split(/\s+/).filter(Boolean).length;
-      const newHistoryItem: TranscriptItem = {
+      const newHistoryItem = {
         id: `transcript-demo-${Date.now()}`,
         text: preset.text,
         model: 'gemini-3.5-transcribe',
@@ -414,7 +408,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
   /**
    * Handle user uploading a custom audio file to transcribe
    */
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -429,7 +423,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
+      const base64 = reader.result;
       setRecordedBase64(base64);
       setRecordSeconds(12);
       transcribeAudioData(base64, mime, file);
@@ -452,7 +446,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
     }
     if (!transcriptResult) return;
 
-    const item: TranscriptItem = {
+    const item = {
       id: `transcript-${Date.now()}`,
       text: transcriptResult,
       model: 'gemini-3.5-transcribe',
@@ -479,7 +473,7 @@ export const TranscribeScreen: React.FC<TranscribeScreenProps> = ({
     }
   };
 
-  const formatDuration = (sec: number) => {
+  const formatDuration = (sec) => {
     const mm = String(Math.floor(sec / 60)).padStart(2, '0');
     const ss = String(sec % 60).padStart(2, '0');
     return `${mm}:${ss}`;

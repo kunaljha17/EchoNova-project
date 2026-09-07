@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ScreenType, ScanHistoryItem } from '../types';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 
-interface HomeScreenProps {
-  scans: ScanHistoryItem[];
-  onNavigate: (screen: ScreenType) => void;
-  onSelectScan: (scan: ScanHistoryItem) => void;
-}
-
-export const HomeScreen: React.FC<HomeScreenProps> = ({
-  scans,
-  onNavigate,
-  onSelectScan,
-}) => {
-  const { user, userProfile, signIn, setIsProfileOpen, loading } = useAuth();
-  const [waveHeights, setWaveHeights] = useState<number[]>([
+export const HomeScreen = ({ scans, onNavigate, onSelectScan }) => {
+  const { user, signIn, setIsProfileOpen, loading } = useAuth();
+  const [waveHeights, setWaveHeights] = useState([
     45, 65, 30, 80, 95, 60, 40, 75, 90, 55, 35, 70, 50, 85, 40, 60, 30, 50, 72, 44, 88, 52, 38, 68,
   ]);
 
@@ -73,7 +62,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </p>
           </div>
 
-          {/* Quick Metrics Counter Strip (Responsive Grid) */}
+          {/* Quick Metrics Counter Strip */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
             <div className="bg-[#1b2026] rounded-xl p-3 flex flex-col items-center justify-center text-center border border-white/5 shadow-sm">
               <span className="font-numeric-metric responsive-numeric-lg text-[#dee3eb] font-bold">
@@ -190,7 +179,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </div>
 
-      {/* Main Responsive Split Grid (Tablet & Desktop 2-Column Layout) */}
+      {/* Main Responsive Split Grid */}
       <div className="responsive-2col-grid">
         {/* Left Column: Inspection Hub & Forensics Scope */}
         <div className="flex flex-col space-y-4">
@@ -316,7 +305,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </div>
 
-          {/* Spectrogram Forensics Highlight / Quick Visualizer */}
+          {/* Spectrogram Forensics Highlight */}
           <div className="rounded-2xl bg-[#0a0f15] p-4 flex flex-col space-y-2.5 shadow-inner border border-white/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-[#bbcbbb]">

@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScreenType } from '../types';
 
-interface RecordScreenProps {
-  onNavigate: (screen: ScreenType) => void;
-  onFinishRecording: (recordedDuration: string) => void;
-}
-
-export const RecordScreen: React.FC<RecordScreenProps> = ({
+export const RecordScreen = ({
   onNavigate,
   onFinishRecording,
 }) => {
@@ -14,11 +8,11 @@ export const RecordScreen: React.FC<RecordScreenProps> = ({
   const [elapsedCentis, setElapsedCentis] = useState(1532); // centiseconds (00:15.32)
   const [decibels, setDecibels] = useState(-14);
   const [clarity, setClarity] = useState(96);
-  const [waveBars, setWaveBars] = useState<number[]>([
+  const [waveBars, setWaveBars] = useState([
     16, 28, 48, 36, 24, 56, 40, 32, 16, 44, 52, 28, 20, 48, 32, 12,
   ]);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (!isRecording) return;
@@ -45,7 +39,7 @@ export const RecordScreen: React.FC<RecordScreenProps> = ({
     };
   }, [isRecording]);
 
-  const formatTimer = (centis: number) => {
+  const formatTimer = (centis) => {
     const totalSec = Math.floor(centis / 100);
     const remainder = centis % 100;
     const ss = String(totalSec).padStart(2, '0');

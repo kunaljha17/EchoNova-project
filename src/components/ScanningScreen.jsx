@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenType } from '../types';
 
-interface ScanningScreenProps {
-  filename?: string;
-  duration?: string;
-  onNavigate: (screen: ScreenType) => void;
-  onScanComplete: () => void;
-}
-
-export const ScanningScreen: React.FC<ScanningScreenProps> = ({
+export const ScanningScreen = ({
   filename = 'incoming_call_record_89.wav',
   duration = '0:24',
   onNavigate,

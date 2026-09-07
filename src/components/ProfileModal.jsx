@@ -1,13 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ScanHistoryItem } from '../types';
 
-interface ProfileModalProps {
-  scansCount: number;
-  onNavigateToScans?: () => void;
-}
-
-export const ProfileModal: React.FC<ProfileModalProps> = ({ scansCount, onNavigateToScans }) => {
+export const ProfileModal = ({ scansCount, onNavigateToScans }) => {
   const {
     user,
     userProfile,
