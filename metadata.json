@@ -1,0 +1,10 @@
+{
+  "name": "VoiceGuard AI",
+  "description": "AI Voice Cloning & Deepfake Guard. Real-time spectral analysis, synthesized audio forensics, and live acoustic sentry against generative neural models.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

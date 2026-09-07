@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profile document: authenticated user can read and write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // User scan records subcollection
+      match /scans/{scanId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // User transcripts subcollection
+      match /transcripts/{transcriptId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
