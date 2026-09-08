@@ -4,7 +4,53 @@
 
 ---
 
+## 🎨 Canva Presentation Theme & Color Palette Guide (Matching VoiceGuard App UI)
+
+To ensure the PPT visually mirrors the production app's high-tech, dark forensic cybersecurity aesthetic, use the exact hex codes below in your Canva color picker:
+
+### 1. Primary Palette & Surfaces
+| Element | Hex Code | Visual Sample / Name | Canva Usage Guideline |
+| :--- | :--- | :--- | :--- |
+| **Slide Background** | `#0F141A` | Obsidian Navy | Set as the solid background color for all 5 slides. Gives a professional, low-fatigue cyber defense backdrop. |
+| **Content Cards / Boxes** | `#171C22` | Dark Slate Surface | Use for background fill of all content cards, bento-grid tiles, and comparison containers. |
+| **Inner Box / Inset Well** | `#0A0F15` | Jet Black Well | Use for inner stat boxes, code/flowchart node containers, or quote highlights inside the main cards. |
+| **Hover / Secondary Box** | `#252A31` | Charcoal Accent Fill | Use for button shapes, interactive badge backings, or table row alternations. |
+
+### 2. Typography & Text Hierarchy
+| Element | Hex Code | Visual Sample / Name | Canva Usage Guideline |
+| :--- | :--- | :--- | :--- |
+| **Main Headings & Titles** | `#DEE3EB` | Crisp Off-White | Slide titles, primary bold headings, and high-priority bullet text. Maximum readability on dark background. |
+| **Subheadings & Body Text** | `#BBCBBB` | Muted Ice Gray | Explanatory text, secondary descriptions, and diagram label annotations. |
+| **Captions & Metadata** | `#869486` | Acoustic Sage Gray | Citations, timestamps, footnote references, and subtle metric labels (e.g., "48 kHz", "Latency <50ms"). |
+
+### 3. Highlight Accents (Word Highlights, Badges & Icons)
+| Accent Role | Hex Code | Color Name | Canva Usage Guideline |
+| :--- | :--- | :--- | :--- |
+| **Primary Brand Accent (Safe / Authentic)** | `#54E98A` | **Cyber Neon Green** | **HIGHLIGHT WORDS:** Bold key terms in bullets (e.g., **Real-Time Defense**, **Authentic Human**, **Sub-second Warning**). Use for checkmarks, primary CTA boxes, and "Built in Prototype" badges. |
+| **Deep Green Box Fill** | `#003919` | Forest Shield Base | Background fill for green badge pills (pair with `#54E98A` text and 1px `#54E98A` border). |
+| **Threat & Alert Accent (Deepfake / Risk)** | `#FFB4AB` | **Coral / Salmon Red** | **HIGHLIGHT WORDS:** Bold risk terms (e.g., **Voice Cloning**, **Zero-Day Vocoder**, **Critical Glottal Pulse Flagged**). Use for warning icons and "Deepfake Detected" tags. |
+| **Deep Red Box Fill** | `#93000A` / `#690005` | Crimson Warning Base | Background fill for threat alerts or risk matrix boxes (pair with `#FFB4AB` text). |
+| **Tech, Models & Telemetry** | `#7DD0FF` | **Electric Cyan** | **HIGHLIGHT WORDS:** Technical frameworks, model names (e.g., **RawNet2**, **AASIST**, **Gemini 2.5 Flash**, **Web Audio FFT**). |
+| **Caution / Parameter Accent** | `#FFC37D` | Acoustic Amber | Use for threshold indicators (e.g., "90% Sensitivity Threshold"), intermediate timeline phases, or caution tags. |
+
+### 4. Lines, Borders & Flowchart Connectors
+| Element | Hex Code / Style | Canva Usage Guideline |
+| :--- | :--- | :--- |
+| **Box / Card Borders** | `#252A31` *(or White at 10% opacity)* | 1px clean border around cards and containers to give crisp optical separation from the `#0F141A` slide background. |
+| **Accent Divider Lines** | `#54E98A` *(or Gradient to `#7DD0FF`)* | 1.5px horizontal separator line directly beneath slide titles or between card header and body. |
+| **Flowchart Arrows / Lines** | `#7DD0FF` *(Electric Cyan)* | Connecting arrows between pipeline stages in Slide 2 flowchart. Shows dynamic signal flow. |
+| **Status Glow Accent** | `#54E98A` (20% Opacity) | Soft blur circle placed behind key statistics (e.g., "99.2%") for a subtle cyber glow effect. |
+
+---
+
 ## SLIDE 1 – Proposed Solution (Idea / Solution / Prototype)
+
+### Color Styling Instructions for Slide 1
+- **Slide Background:** `#0F141A`
+- **Slide Title:** `#DEE3EB` with bottom accent line in `#54E98A`
+- **Cards / Containers:** `#171C22` with 1px border `#252A31`
+- **Highlight Words in Bullets:** `#54E98A` (for core capabilities) and `#FFB4AB` (for threat terms)
+- **Prototype Status Badge:** Box background `#003919`, text `#54E98A`, border `#54E98A`
 
 ### Slide Content
 - **End-to-End Defense Architecture:** Real-time acoustic sentry detecting synthetic speech artifacts during active cellular, VoIP, and web calls.
@@ -17,12 +63,20 @@
 ### Suggested Visual
 - **Visual Type:** Split Layout — Prototype Screenshot + System Overview Graphic.
 - **Left Side:** High-resolution screenshot of the working VoiceGuard prototype (showing live waveform visualizer, alert banner, and forensic confidence score).
-- **Right Side:** Minimalist conceptual graphic illustrating an incoming audio call split through the "Acoustic Shield Neural Link" into "Verified Human" vs. "Cloned Voice Flagged".
-- **Icon Accents:** Shield icon (`shield_lock`), acoustic wave icon (`graphic_eq`), alert beacon icon (`notification_important`).
+- **Right Side:** Minimalist conceptual graphic illustrating an incoming audio call split through the "Acoustic Shield Neural Link" into "Verified Human" (`#54E98A`) vs. "Cloned Voice Flagged" (`#FFB4AB`).
+- **Icon Accents:** Shield icon (`shield_lock` in `#54E98A`), acoustic wave icon (`graphic_eq` in `#7DD0FF`), alert beacon icon (`notification_important` in `#FFB4AB`).
 
 ---
 
 ## SLIDE 2 – Technical Approach
+
+### Color Styling Instructions for Slide 2
+- **Slide Background:** `#0F141A`
+- **Flowchart Box Fills:** `#171C22` (Outer box), `#0A0F15` (Inner step details)
+- **Flowchart Connector Lines & Arrows:** `#7DD0FF` (Electric Cyan)
+- **Built in Prototype Badge:** `#003919` fill with `#54E98A` text & border
+- **Planned for SIH Scale Badge:** `#1B2026` fill with `#7DD0FF` text & border
+- **Highlight Words:** `#7DD0FF` for technologies (React, FFT, RawNet2, Gemini)
 
 ### Slide Content
 - **Front-End & Client Daemon:** React, Web Audio API (real-time FFT spectrogram), Capacitor (native Android/iOS packaging).
@@ -41,11 +95,18 @@
   4. `[Dual Inference Engine]` (Edge CNN/RawNet + Cloud Multimodal LLM) $\rightarrow$
   5. `[Decision Engine]` (Custom Threshold Comparator: $\ge 90\%$) $\rightarrow$
   6. `[Automated Response]` (In-App Alert, Call Mute, SIP Intercept).
-- **Status Tags on Diagram:** Badge `[Built in Prototype]` on Steps 1–3 & 5; Badge `[Planned SIH Scale]` on Step 4 (dual-engine) and Step 6 (SIP carrier hook).
+- **Status Tags on Diagram:** Badge `[Built in Prototype]` (`#54E98A`) on Steps 1–3 & 5; Badge `[Planned SIH Scale]` (`#7DD0FF`) on Step 4 (dual-engine) and Step 6 (SIP carrier hook).
 
 ---
 
 ## SLIDE 3 – Feasibility and Viability
+
+### Color Styling Instructions for Slide 3
+- **Slide Background:** `#0F141A`
+- **Left Column Box (Challenges & Risks):** `#171C22` fill, left accent border `#FFB4AB` (Coral Red), heading text `#FFB4AB`
+- **Right Column Box (Our Engineering Solutions):** `#171C22` fill, left accent border `#54E98A` (Neon Green), heading text `#54E98A`
+- **Highlight Words in Bullets:** `#FFB4AB` on risk side, `#54E98A` on solution side
+- **Icons:** Stopwatch & Sliders in `#7DD0FF`
 
 ### Slide Content
 - **Technical Feasibility:** Validated with open forensic benchmarks (ASVspoof 2021, In-the-Wild) and lightweight edge model quantization (int8 ONNX).
@@ -57,12 +118,12 @@
 
 ### Suggested Visual
 - **Visual Type:** 2-Column Risk & Mitigation Matrix / Icon Grid.
-- **Column 1 (Challenges & Risks):**
+- **Column 1 (Challenges & Risks - Styled in `#FFB4AB`):**
   - High latency during live calls
   - Evolving zero-day generative AI voices
   - High false positive risk in noisy audio
   - Telecom carrier access hurdles
-- **Column 2 (Our Engineering Solutions):**
+- **Column 2 (Our Engineering Solutions - Styled in `#54E98A`):**
   - Hierarchical 2-tier edge/cloud inference
   - Biological vocal-tract invariant detection
   - Dynamic user-controlled confidence thresholds
@@ -72,6 +133,16 @@
 ---
 
 ## SLIDE 4 – Impact and Benefits
+
+### Color Styling Instructions for Slide 4
+- **Slide Background:** `#0F141A`
+- **Stakeholder Cards (Top 4 Cards):** `#171C22` with 1px border `#252A31`, hover card glow `#54E98A`
+- **Roadmap Chevrons (Bottom Phase Bar):**
+  - Phase 1 (Prototype / Current): `#54E98A` (Neon Green)
+  - Phase 2 (Edge Android Daemon): `#7DD0FF` (Electric Cyan)
+  - Phase 3 (SIP Carrier Trunk): `#FFC37D` (Acoustic Amber)
+  - Phase 4 (National Mesh): `#DEE3EB` (Bright Off-White)
+- **Highlight Words in Bullets:** `#54E98A` for benefits, `#FFB4AB` for fraud prevention
 
 ### Slide Content
 - **Banking & Enterprise Protection:** Shields call centers and BFSI desks against CEO fraud, unauthorized fund transfers, and voice-authorized wire theft.
@@ -90,15 +161,27 @@
 ### Suggested Visual
 - **Visual Type:** Multi-Stakeholder Bento-Box Layout + Milestone Timeline Graphic.
 - **Top Section (Stakeholder Cards):** 4 clean cards with icons:
-  - *BFSI & Fintech* (Fraud prevention, KYC voice authorization)
-  - *General Public & Elderly* (Family emergency scam protection)
-  - *Telecom Carriers* (Trust-as-a-Service, verified caller tags)
-  - *Law Enforcement* (Tamper-proof forensic incident export)
+  - *BFSI & Fintech* (Fraud prevention, KYC voice authorization) — Icon `#54E98A`
+  - *General Public & Elderly* (Family emergency scam protection) — Icon `#7DD0FF`
+  - *Telecom Carriers* (Trust-as-a-Service, verified caller tags) — Icon `#FFC37D`
+  - *Law Enforcement* (Tamper-proof forensic incident export) — Icon `#FFB4AB`
 - **Bottom Section (Roadmap Tracker):** 4-step progressive milestone chevron: `Prototype MVP (Current)` $\rightarrow$ `Edge Android Daemon (SIH Finale)` $\rightarrow$ `Enterprise SIP Trunk` $\rightarrow$ `National Sentry Mesh`.
 
 ---
 
 ## SLIDE 5 – Research and References
+
+### Color Styling Instructions for Slide 5
+- **Slide Background:** `#0F141A`
+- **Reference Cards:** `#171C22` background with subtle 1px border `#252A31`
+- **Category Badge Pills:**
+  - `[Benchmark]`: Background `#003919`, text `#54E98A`
+  - `[Neural Architecture]`: Background `#102B3F`, text `#7DD0FF`
+  - `[Raw Audio SOTA]`: Background `#102B3F`, text `#7DD0FF`
+  - `[Generative Dataset]`: Background `#382A12`, text `#FFC37D`
+  - `[Policy / Risk]`: Background `#451014`, text `#FFB4AB`
+- **Links & Citations:** URLs in `#7DD0FF` (Electric Cyan underline)
+- **Author & Year Text:** `#DEE3EB` (Bold Off-White)
 
 ### Slide Content
 - **ASVspoof 2021 Consortium (2021):** Evaluates voice biometrics under logical access (TTS/VC) and speech deepfake conditions. [https://www.asvspoof.org](https://www.asvspoof.org)
@@ -115,4 +198,4 @@
   - `[Raw Audio SOTA]` RawNet2 Interspeech
   - `[Generative Dataset]` Audio In-The-Wild 2024
   - `[Policy / Risk]` FTC Voice Cloning Directive
-- **Accents:** Academic graduation cap icon (`school`), research article icon (`article`), verified link icon (`link`).
+- **Accents:** Academic graduation cap icon (`school` in `#54E98A`), research article icon (`article` in `#7DD0FF`), verified link icon (`link` in `#7DD0FF`).
