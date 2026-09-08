@@ -16,6 +16,7 @@ import { SamplesScreen } from './components/SamplesScreen';
 import { AlertsScreen } from './components/AlertsScreen';
 import { TranscribeScreen } from './components/TranscribeScreen';
 import { ProfileModal } from './components/ProfileModal';
+import { LoadingScreen } from './components/LoadingScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   saveScanRecord,
@@ -26,11 +27,13 @@ import {
 
 function MainApp() {
   const { user } = useAuth();
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [currentScreen, setCurrentScreen] = useState('home');
   const [screenHistory, setScreenHistory] = useState(['home']);
   const [scans, setScans] = useState(INITIAL_SCANS);
   const [selectedScan, setSelectedScan] = useState(INITIAL_SCANS[0]);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [transcribeInitialData, setTranscribeInitialData] = useState(null);
 
   // Active scan parameters during scanning stream
   const [scanningTarget, setScanningTarget] = useState({
@@ -106,17 +109,25 @@ function MainApp() {
   const handleStartScan = (
     filename,
     duration,
-    mode
+    mode,
+    audioUrl = null,
+    file = null
   ) => {
-    setScanningTarget({ filename, duration, mode });
+    setScanningTarget({ filename, duration, mode, audioUrl, file });
     navigateTo('scanning_stream');
   };
 
-  const handleFinishRecording = (duration) => {
+  const handleNavigateToTranscribe = (data = null) => {
+    setTranscribeInitialData(data);
+    navigateTo('transcribe');
+  };
+
+  const handleFinishRecording = (duration, audioUrl = null) => {
     setScanningTarget({
       filename: `mic_sentry_capture_${Date.now().toString().slice(-4)}.wav`,
       duration,
       mode: 'deep',
+      audioUrl,
     });
     navigateTo('scanning_stream');
   };
@@ -130,6 +141,7 @@ function MainApp() {
       filename: scanningTarget.filename,
       timeAgo: 'Just now',
       duration: scanningTarget.duration,
+      audioUrl: scanningTarget.audioUrl || null,
       isSynthetic,
       classification: isSynthetic
         ? `Cloned / AI-Generated Voice (${confidence}%)`
@@ -199,6 +211,7 @@ function MainApp() {
           <RecordScreen
             onNavigate={navigateTo}
             onFinishRecording={handleFinishRecording}
+            onNavigateToTranscribe={handleNavigateToTranscribe}
           />
         )}
 
@@ -231,6 +244,7 @@ function MainApp() {
             onSendToScan={(audioData, filename, duration) =>
               handleStartScan(filename, duration, 'deep')
             }
+            initialData={transcribeInitialData}
           />
         )}
 
@@ -263,6 +277,11 @@ function MainApp() {
         scansCount={scans.length}
         onNavigateToScans={() => navigateTo('home')}
       />
+
+      {/* Starting Animated Loading Screen */}
+      {isAppLoading && (
+        <LoadingScreen onComplete={() => setIsAppLoading(false)} />
+      )}
     </div>
   );
 }

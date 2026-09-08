@@ -13,9 +13,41 @@ dotenv.config();
 
 // Ensure temporary upload directory exists
 const uploadDir = path.join(os.tmpdir(), 'voiceguard_uploads');
+const tempAudioDir = path.join(uploadDir, 'persistent_temp_audio');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+if (!fs.existsSync(tempAudioDir)) {
+  fs.mkdirSync(tempAudioDir, { recursive: true });
+}
+
+// Temporary audio registry for streaming audio playback
+interface TempAudioItem {
+  id: string;
+  filePath: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  createdAt: number;
+}
+const tempAudioRegistry = new Map<string, TempAudioItem>();
+
+// Periodically clean up temporary audio older than 2 hours
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 2 * 60 * 60 * 1000;
+  for (const [id, item] of tempAudioRegistry.entries()) {
+    if (now - item.createdAt > maxAge) {
+      if (fs.existsSync(item.filePath)) {
+        try {
+          fs.unlinkSync(item.filePath);
+        } catch (_) {}
+      }
+      tempAudioRegistry.delete(id);
+    }
+  }
+}, 15 * 60 * 1000);
+
 const upload = multer({
   dest: uploadDir,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
@@ -197,6 +229,172 @@ async function startServer() {
   app.post('/api/analyze', multerWrapper, handleAnalyze);
 
   /**
+   * POST /api/upload-temp
+   * Stores audio temporarily for instant listening, streaming, and inspection
+   */
+  const handleUploadTemp = async (req: express.Request, res: express.Response) => {
+    try {
+      let savedFilePath: string | null = null;
+      let originalName = 'audio_track.wav';
+      let mimeType = 'audio/wav';
+      let fileSize = 0;
+
+      if (req.file) {
+        originalName = req.file.originalname || originalName;
+        mimeType = req.file.mimetype || 'audio/wav';
+        fileSize = req.file.size;
+
+        const ext = path.extname(originalName) || '.wav';
+        const uniqueId = randomUUID();
+        savedFilePath = path.join(tempAudioDir, `temp_${uniqueId}${ext}`);
+
+        // Move/copy file to persistent temp audio directory
+        fs.copyFileSync(req.file.path, savedFilePath);
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (_) {}
+
+        const item: TempAudioItem = {
+          id: uniqueId,
+          filePath: savedFilePath,
+          originalName,
+          mimeType,
+          size: fileSize,
+          createdAt: Date.now(),
+        };
+        tempAudioRegistry.set(uniqueId, item);
+
+        return res.json({
+          success: true,
+          audioId: uniqueId,
+          audioUrl: `/api/temp-audio/${uniqueId}`,
+          filename: originalName,
+          size: fileSize,
+          mimeType,
+        });
+      } else if (req.body?.audioData) {
+        const raw = req.body.audioData;
+        const cleanBase64 = raw.includes('base64,') ? raw.split('base64,')[1] : raw;
+        const audioBuffer = Buffer.from(cleanBase64, 'base64');
+        originalName = req.body.filename || originalName;
+        mimeType = req.body.mimeType || 'audio/wav';
+        fileSize = audioBuffer.length;
+
+        const ext = path.extname(originalName) || '.wav';
+        const uniqueId = randomUUID();
+        savedFilePath = path.join(tempAudioDir, `temp_${uniqueId}${ext}`);
+        fs.writeFileSync(savedFilePath, audioBuffer);
+
+        const item: TempAudioItem = {
+          id: uniqueId,
+          filePath: savedFilePath,
+          originalName,
+          mimeType,
+          size: fileSize,
+          createdAt: Date.now(),
+        };
+        tempAudioRegistry.set(uniqueId, item);
+
+        return res.json({
+          success: true,
+          audioId: uniqueId,
+          audioUrl: `/api/temp-audio/${uniqueId}`,
+          filename: originalName,
+          size: fileSize,
+          mimeType,
+        });
+      } else {
+        return res.status(400).json({ error: 'No audio data provided to upload.' });
+      }
+    } catch (err: any) {
+      console.error('[Upload Temp Error]:', err);
+      return res.status(500).json({ error: err.message || 'Failed to save temporary audio.' });
+    }
+  };
+
+  app.post('/upload-temp', multerWrapper, handleUploadTemp);
+  app.post('/api/upload-temp', multerWrapper, handleUploadTemp);
+
+  /**
+   * GET /api/temp-audio/:id
+   * Streams audio with HTTP Range support for seeking and scrubber playback
+   */
+  const handleGetTempAudio = (req: express.Request, res: express.Response) => {
+    const audioId = req.params.id;
+    const item = tempAudioRegistry.get(audioId);
+
+    // If not found in registry, search file system in tempAudioDir
+    let filePath: string | null = item ? item.filePath : null;
+    let mimeType: string = item ? item.mimeType : 'audio/wav';
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      const files = fs.readdirSync(tempAudioDir);
+      const matched = files.find((f) => f.includes(audioId));
+      if (matched) {
+        filePath = path.join(tempAudioDir, matched);
+        const ext = path.extname(matched).toLowerCase();
+        if (ext === '.mp3') mimeType = 'audio/mpeg';
+        else if (ext === '.m4a' || ext === '.mp4') mimeType = 'audio/mp4';
+        else if (ext === '.flac') mimeType = 'audio/flac';
+        else if (ext === '.ogg') mimeType = 'audio/ogg';
+        else if (ext === '.webm') mimeType = 'audio/webm';
+        else mimeType = 'audio/wav';
+      }
+    }
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Temporary audio recording not found or expired.' });
+    }
+
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (range) {
+      // Parse Range header: e.g. "bytes=0-1024"
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunksize = end - start + 1;
+      const fileStream = fs.createReadStream(filePath, { start, end });
+
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': mimeType,
+      });
+      fileStream.pipe(res);
+    } else {
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': mimeType,
+        'Accept-Ranges': 'bytes',
+      });
+      fs.createReadStream(filePath).pipe(res);
+    }
+  };
+
+  app.get('/temp-audio/:id', handleGetTempAudio);
+  app.get('/api/temp-audio/:id', handleGetTempAudio);
+
+  /**
+   * DELETE /api/temp-audio/:id
+   * Cleans up temporary audio on user action
+   */
+  app.delete('/api/temp-audio/:id', (req: express.Request, res: express.Response) => {
+    const audioId = req.params.id;
+    const item = tempAudioRegistry.get(audioId);
+    if (item && fs.existsSync(item.filePath)) {
+      try {
+        fs.unlinkSync(item.filePath);
+      } catch (_) {}
+      tempAudioRegistry.delete(audioId);
+    }
+    return res.json({ success: true });
+  });
+
+  /**
    * POST /live-analyze & /api/live-analyze
    * Accepts streamed audio chunks (for live recording), buffers/converts to a usable audio format,
    * then calls predict() the same way, and deletes temp buffer file after
@@ -270,7 +468,8 @@ async function startServer() {
 
   /**
    * Audio Transcription API
-   * Uses Google Gemini model: gemini-3.5-transcribe
+   * Uses high-fidelity Gemini models with automatic fallback
+   * (gemini-flash-latest & gemini-3.8-flash)
    */
   app.post('/api/transcribe', async (req, res) => {
     try {
@@ -299,42 +498,64 @@ async function startServer() {
 
       const instructionText =
         prompt ||
-        'Transcribe this audio recording accurately verbatim. Capture all spoken words with correct punctuation and capitalization. Do not hallucinate or omit words.';
+        'Transcribe this audio recording accurately verbatim with natural capitalization and punctuation. If speech is present, output only the transcribed words. If silent, output nothing.';
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-transcribe',
-        contents: {
-          parts: [audioPart, { text: instructionText }],
-        },
-      });
-
-      // Extract transcription text: gemini-3.5-transcribe returns { audioTranscription: { text } }
+      // Attempt transcription with gemini-flash-latest first, falling back to gemini-3.8-flash
+      const candidateModels = ['gemini-flash-latest', 'gemini-3.8-flash'];
+      let lastError: any = null;
       let transcriptionText = '';
-      const candidate = response.candidates?.[0];
-      const parts = candidate?.content?.parts || [];
+      let usedModel = candidateModels[0];
 
-      for (const part of parts) {
-        if ((part as any).audioTranscription?.text) {
-          transcriptionText += (part as any).audioTranscription.text + ' ';
-        } else if (part.text) {
-          transcriptionText += part.text + ' ';
+      for (const modelName of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: [audioPart, instructionText],
+          });
+
+          const candidate = response.candidates?.[0];
+          const parts = candidate?.content?.parts || [];
+
+          for (const part of parts) {
+            if ((part as any).audioTranscription?.text) {
+              transcriptionText += (part as any).audioTranscription.text + ' ';
+            } else if (part.text) {
+              transcriptionText += part.text + ' ';
+            }
+          }
+
+          transcriptionText = transcriptionText.trim();
+          if (!transcriptionText && response.text) {
+            transcriptionText = response.text.trim();
+          }
+
+          usedModel = modelName;
+          lastError = null;
+          break; // Successfully generated transcription
+        } catch (err: any) {
+          console.warn(`[Transcription] Model ${modelName} encountered error:`, err?.message || err);
+          lastError = err;
         }
       }
 
-      transcriptionText = transcriptionText.trim();
-      if (!transcriptionText && response.text) {
-        transcriptionText = response.text.trim();
+      if (lastError && !transcriptionText) {
+        const errorMsg = lastError?.message || 'Transcription service error';
+        return res.status(500).json({
+          error: errorMsg.includes('INVALID_ARGUMENT')
+            ? 'The audio format could not be processed. Please record again.'
+            : errorMsg,
+        });
       }
 
       return res.json({
         success: true,
         text: transcriptionText,
-        model: 'gemini-3.5-transcribe',
+        model: usedModel,
       });
     } catch (error: any) {
       console.error('Audio transcription error:', error);
       return res.status(500).json({
-        error: error?.message || 'Failed to transcribe audio with gemini-3.5-transcribe',
+        error: error?.message || 'Failed to transcribe audio',
       });
     }
   });

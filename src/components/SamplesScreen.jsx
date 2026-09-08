@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { SAMPLES_DATA } from '../data/mockData';
+import { generateSyntheticAudioSample } from '../utils/audioHelper';
 
 export const SamplesScreen = ({
   onNavigate,
@@ -11,6 +12,16 @@ export const SamplesScreen = ({
   // Modal State
   const [activeModalClip, setActiveModalClip] = useState(null);
 
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
   const filteredClips = SAMPLES_DATA.filter((clip) => {
     if (filter === 'all') return true;
     return clip.type === filter;
@@ -19,8 +30,24 @@ export const SamplesScreen = ({
   const authenticCount = SAMPLES_DATA.filter((c) => c.type === 'authentic').length;
   const clonedCount = SAMPLES_DATA.filter((c) => c.type === 'cloned').length;
 
-  const togglePlay = (id) => {
-    setPlayingClipId(playingClipId === id ? null : id);
+  const togglePlay = (clip) => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.onended = () => setPlayingClipId(null);
+    }
+
+    if (playingClipId === clip.id) {
+      audioRef.current.pause();
+      setPlayingClipId(null);
+    } else {
+      audioRef.current.pause();
+      const sampleUrl = generateSyntheticAudioSample(clip.type === 'cloned' ? 'cloned' : 'human', 14);
+      if (sampleUrl) {
+        audioRef.current.src = sampleUrl;
+        audioRef.current.play().catch((err) => console.warn('Sample audio play notice:', err));
+        setPlayingClipId(clip.id);
+      }
+    }
   };
 
   const handleAnalyzeClip = (clip) => {
@@ -28,11 +55,13 @@ export const SamplesScreen = ({
   };
 
   const handleViewFullReport = (clip) => {
+    const audioUrl = generateSyntheticAudioSample(clip.type === 'cloned' ? 'cloned' : 'human', 24);
     const scanItem = {
       id: clip.id,
       filename: `${clip.title.replace(/\s+/g, '_')}.wav`,
       timeAgo: 'Just now',
       duration: clip.duration,
+      audioUrl: audioUrl || null,
       isSynthetic: clip.type === 'cloned',
       classification: clip.confidenceLabel,
       confidencePercent: clip.confidenceNum,
@@ -195,7 +224,7 @@ export const SamplesScreen = ({
               {/* Playback & Mini Waveform Track */}
               <div className="bg-[#0a0f15] rounded-lg p-2 flex items-center gap-2.5 border border-white/5">
                 <button
-                  onClick={() => togglePlay(clip.id)}
+                  onClick={() => togglePlay(clip)}
                   className={`w-9 h-9 rounded-full bg-[#30353c] flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer ${
                     isPlaying ? 'text-[#54e98a] bg-[#252a31]' : 'text-[#dee3eb] hover:text-[#54e98a]'
                   }`}

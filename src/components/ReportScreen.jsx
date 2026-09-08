@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { generateSyntheticAudioSample, formatAudioTime } from '../utils/audioHelper';
 
 export const ReportScreen = ({
   scanItem,
   onNavigate,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playProgress, setPlayProgress] = useState(28); // 28% -> ~6.8s
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(24);
+  const [playProgress, setPlayProgress] = useState(0); // 0 - 100%
   const [speed, setSpeed] = useState('1.0x');
   const [isLooping, setIsLooping] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
 
-  const animRef = useRef(null);
+  const audioRef = useRef(null);
 
   const isSynthetic = scanItem ? scanItem.isSynthetic : true;
   const filename = scanItem ? scanItem.filename : 'incoming_call_record_89.wav';
@@ -23,36 +27,93 @@ export const ReportScreen = ({
     scanItem?.acousticFindings ||
     'Extremely high probability of latent diffusion neural voice generation.';
 
+  // Initialize audio source from scanItem or synthesized sample
   useEffect(() => {
-    if (isPlaying) {
-      const step = () => {
-        setPlayProgress((prev) => {
-          const rate = speed === '1.5x' ? 0.45 : 0.3;
-          const next = prev + rate;
-          if (next >= 96) {
-            if (isLooping) {
-              return 4;
-            } else {
-              setIsPlaying(false);
-              return 96;
-            }
-          }
-          return next;
-        });
-        animRef.current = requestAnimationFrame(step);
-      };
-      animRef.current = requestAnimationFrame(step);
+    if (scanItem?.audioUrl) {
+      setAudioUrl(scanItem.audioUrl);
     } else {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
+      const generated = generateSyntheticAudioSample(isSynthetic ? 'cloned' : 'human', 24);
+      if (generated) {
+        setAudioUrl(generated);
+      }
     }
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, [isPlaying, speed, isLooping]);
 
-  const currentSeconds = ((playProgress / 100) * 24.0).toFixed(1);
-  const formattedSeconds =
-    Number(currentSeconds) < 10 ? `0:0${currentSeconds}` : `0:${currentSeconds}`;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [scanItem, isSynthetic]);
+
+  // Sync speed changes to audio
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed === '1.5x' ? 1.5 : 1.0;
+    }
+  }, [speed]);
+
+  // Sync looping to audio
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.loop = isLooping;
+    }
+  }, [isLooping]);
+
+  const togglePlayback = async () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.warn('[ReportScreen] Audio play failed:', err);
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (!audioRef.current) return;
+    const curr = audioRef.current.currentTime;
+    const dur = audioRef.current.duration || duration || 24;
+    setCurrentTime(curr);
+    const pct = dur > 0 ? (curr / dur) * 100 : 0;
+    setPlayProgress(Math.min(100, Math.max(0, pct)));
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!audioRef.current) return;
+    const dur = audioRef.current.duration;
+    if (dur && !isNaN(dur) && dur > 0) {
+      setDuration(dur);
+    }
+  };
+
+  const handleEnded = () => {
+    if (!isLooping) {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setPlayProgress(0);
+    }
+  };
+
+  const handleSeek = (e) => {
+    if (!audioRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+    const total = audioRef.current.duration || duration || 24;
+    const target = (pct / 100) * total;
+    audioRef.current.currentTime = target;
+    setCurrentTime(target);
+    setPlayProgress(pct);
+  };
+
+  const formattedSeconds = formatAudioTime(currentTime);
+  const formattedTotal = formatAudioTime(duration);
 
   return (
     <div className="flex flex-col w-full pb-8 gap-4">
@@ -236,14 +297,25 @@ export const ReportScreen = ({
 
             {/* Scrubber Area */}
             <div className="relative w-full bg-[#0a0f15] rounded-xl p-3 overflow-hidden flex flex-col gap-2 border border-white/5">
+              {/* Hidden HTML5 Audio Element */}
+              {audioUrl && (
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onEnded={handleEnded}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  preload="metadata"
+                />
+              )}
+
               {/* Waveform Graph SVG */}
               <div
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-                  setPlayProgress(pct);
-                }}
+                onClick={handleSeek}
                 className="relative w-full h-24 flex items-center cursor-pointer select-none"
+                title="Click anywhere to seek playback"
               >
                 <svg
                   className="w-full h-full preserve-3d"
@@ -360,8 +432,8 @@ export const ReportScreen = ({
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    aria-label="Play sample"
+                    onClick={togglePlayback}
+                    aria-label={isPlaying ? 'Pause sample' : 'Play sample'}
                     className="w-9 h-9 rounded-full bg-[#54e98a] text-[#003919] flex items-center justify-center shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                   >
                     <span
@@ -375,7 +447,9 @@ export const ReportScreen = ({
                     <span className="font-label-md text-[13px] text-[#dee3eb] font-semibold font-mono">
                       {formattedSeconds}
                     </span>
-                    <span className="font-label-sm text-[10px] text-[#bbcbbb] font-mono">/ 0:24.0</span>
+                    <span className="font-label-sm text-[10px] text-[#bbcbbb] font-mono">
+                      / {formattedTotal}
+                    </span>
                   </div>
                 </div>
 

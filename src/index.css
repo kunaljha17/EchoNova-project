@@ -305,3 +305,93 @@
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Loading Screen Keyframes & Animation Utilities                             */
+/* -------------------------------------------------------------------------- */
+@keyframes loading-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes loading-pulse-glow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes loading-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes loading-bar-bounce {
+  0%, 100% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-spin-slow {
+  animation: loading-spin-slow 12s linear infinite;
+}
+
+.animate-spin-reverse-medium {
+  animation: loading-spin-reverse 8s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: loading-pulse-glow 2.5s ease-in-out infinite;
+}
+
+.animate-ripple-1 {
+  animation: loading-ripple 2.4s cubic-bezier(0.1, 0.7, 0.4, 1) infinite;
+}
+
+.animate-ripple-2 {
+  animation: loading-ripple 2.4s cubic-bezier(0.1, 0.7, 0.4, 1) infinite 0.8s;
+}
+
+.animate-ripple-3 {
+  animation: loading-ripple 2.4s cubic-bezier(0.1, 0.7, 0.4, 1) infinite 1.6s;
+}
+
+.animate-shimmer-sweep {
+  animation: loading-shimmer 2s infinite linear;
+}
+
+

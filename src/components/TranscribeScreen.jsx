@@ -30,6 +30,7 @@ const DEMO_AUDIO_PRESETS = [
 export const TranscribeScreen = ({
   onNavigate,
   onSendToScan,
+  initialData = null,
 }) => {
   const { user, signIn } = useAuth();
 
@@ -336,7 +337,8 @@ export const TranscribeScreen = ({
         setTranscriptResult(transcribedText);
       }
 
-      setActiveModel(data.model || 'gemini-3.5-transcribe');
+      const activeModelName = data.model || 'gemini-flash-latest';
+      setActiveModel(activeModelName);
 
       // Create history item if text was recognized
       if (transcribedText) {
@@ -345,7 +347,7 @@ export const TranscribeScreen = ({
         const newTranscriptItem = {
           id: `transcript-${Date.now()}`,
           text: transcribedText,
-          model: 'gemini-3.5-transcribe',
+          model: activeModelName,
           duration: durationStr,
           wordCount,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -362,14 +364,37 @@ export const TranscribeScreen = ({
       }
     } catch (err) {
       console.error('Transcription request failed:', err);
-      setErrorMessage(
-        err.message ||
-          'Failed to transcribe audio. Ensure the backend server and GEMINI_API_KEY are configured.'
-      );
+      let errText = err.message || 'Failed to transcribe audio. Ensure the backend server and GEMINI_API_KEY are configured.';
+      if (typeof errText === 'string' && errText.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(errText);
+          errText = parsed.error?.message || parsed.message || errText;
+        } catch (_) {}
+      }
+      if (errText.includes('INVALID_ARGUMENT')) {
+        errText = 'The audio format could not be processed. Please re-record and try again.';
+      }
+      setErrorMessage(errText);
     } finally {
       setIsTranscribing(false);
     }
   };
+
+  // Hydrate initial audio and transcript passed from Live Sentry
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.audioUrl) setRecordedAudioUrl(initialData.audioUrl);
+      if (initialData.blob) setRecordedBlob(initialData.blob);
+      if (initialData.base64) setRecordedBase64(initialData.base64);
+      if (initialData.mimeType) setAudioMimeType(initialData.mimeType);
+      if (initialData.duration) setRecordSeconds(initialData.duration);
+      if (initialData.transcript) {
+        setTranscriptResult(initialData.transcript);
+      } else if (initialData.base64) {
+        transcribeAudioData(initialData.base64, initialData.mimeType || 'audio/webm', initialData.blob);
+      }
+    }
+  }, [initialData]);
 
   /**
    * Transcribe a demo preset
